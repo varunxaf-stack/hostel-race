@@ -1,0 +1,81 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: profiles
+    // Document ID: {uid}
+    // Fields:
+    //   - uid: string
+    //   - displayName: string
+    //   - branch: string
+    //   - category: string
+    //   - year: string
+    //   - role: string (student, admin)
+    //   - createdAt: timestamp
+    //
+    // Collection: profiles/{uid}/private
+    // Document ID: data
+    // Fields:
+    //   - cgpa: number
+    //   - email: string
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        ((exists(/databases/$(database)/documents/profiles/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data.role == 'admin') ||
+          (request.auth.token.email == "varunxaf@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidProfile(data) {
+      return data.keys().hasAll(['uid', 'displayName', 'branch', 'category', 'year', 'cgpa']) &&
+             data.uid is string &&
+             data.displayName is string &&
+             data.branch is string &&
+             data.category is string &&
+             data.year is string &&
+             data.cgpa is number &&
+             data.cgpa >= 0 && data.cgpa <= 10;
+    }
+
+    function isValidPrivateData(data) {
+      return data.keys().hasAll(['email']) &&
+             data.email is string;
+    }
+
+    // Profiles Collection
+    match /profiles/{uid} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isOwner(uid) && isValidProfile(request.resource.data);
+      allow update: if isAuthenticated() && (isOwner(uid) || isAdmin()) && isValidProfile(request.resource.data);
+      allow delete: if isAdmin();
+
+      // Private Data Subcollection
+      match /private/data {
+        allow read: if isAuthenticated() && (isOwner(uid) || isAdmin());
+        allow create: if isAuthenticated() && isOwner(uid) && isValidPrivateData(request.resource.data);
+        allow update: if isAuthenticated() && (isOwner(uid) || isAdmin()) && isValidPrivateData(request.resource.data);
+        allow delete: if isAdmin();
+      }
+    }
+
+    // Settings Collection
+    match /settings/{settingId} {
+      allow read: if settingId == 'global';
+      allow write: if settingId == 'global' && isAdmin();
+    }
+  }
+}

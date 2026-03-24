@@ -1,0 +1,5 @@
+{
+  "name": "Hostel Race",
+  "description": "A merit-based seat allocation system for hostel seats with private CGPA and public ranking.",
+  "requestFramePermissions": []
+}

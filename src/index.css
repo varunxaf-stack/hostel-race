@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #dc2626;
+  --color-primary-foreground: #ffffff;
+}
+
+@layer utilities {
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  .perspective-2000 {
+    perspective: 2000px;
+  }
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+}
+
+body {
+  @apply bg-zinc-950 text-zinc-100;
+  background-image: radial-gradient(circle at 50% 0%, rgba(220, 38, 38, 0.05) 0%, transparent 50%);
+}

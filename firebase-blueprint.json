@@ -1,0 +1,54 @@
+{
+  "entities": {
+    "profiles": {
+      "title": "User Profile",
+      "description": "Stores public student information.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "branch": { "type": "string" },
+        "category": { "type": "string" },
+        "year": { "type": "string" },
+        "cgpa": { "type": "number" },
+        "role": { "type": "string", "enum": ["student", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "displayName", "branch", "category", "year", "cgpa"]
+    },
+    "private_profiles": {
+      "title": "Private Student Data",
+      "description": "Stores sensitive student information like email.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" }
+      },
+      "required": ["email"]
+    },
+    "settings": {
+      "title": "Global Settings",
+      "description": "Stores seat distribution and global configuration.",
+      "type": "object",
+      "properties": {
+        "seatDistribution": { "type": "object" },
+        "categories": { "type": "array", "items": { "type": "string" } },
+        "instaId": { "type": "string" }
+      },
+      "required": ["seatDistribution", "categories", "instaId"]
+    }
+  },
+  "firestore": {
+    "/profiles/{uid}": {
+      "schema": "profiles",
+      "description": "Public student profiles."
+    },
+    "/profiles/{uid}/private/data": {
+      "schema": "private_profiles",
+      "description": "Private student data (CGPA)."
+    },
+    "/settings/global": {
+      "schema": "settings",
+      "description": "Global application configuration."
+    }
+  }
+}
